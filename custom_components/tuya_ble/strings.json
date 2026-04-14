@@ -25,6 +25,12 @@
                     "username": "Account"
                 },
                 "description": "Tuya BLE requires obtaining encryption key from Tuya cloud. Almost all devices only need to access the cloud once during setup.\n\nRefer to documentation of Tuya integration to retrieve the cloud credentials {url}\n\nEnter your Tuya credentials."
+            },
+            "manual_mac": {
+                "data": {
+                    "address": "MAC Address"
+                },
+                "description": "No auto-discovered Tuya BLE devices found. Enter the MAC address of your BLE device manually (e.g. DC:23:4F:FE:7E:AC). The device must be registered in Tuya cloud."
             }
         }
     },

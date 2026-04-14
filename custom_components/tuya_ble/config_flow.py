@@ -333,7 +333,7 @@ class TuyaBLEConfigFlow(ConfigFlow, domain=DOMAIN):
                 self._discovered_devices[discovery.address] = discovery
 
         if not self._discovered_devices:
-            return self.async_abort(reason="no_unconfigured_devices")
+            return await self.async_step_manual_mac()
 
         def_address: str
         if user_input:
@@ -357,6 +357,50 @@ class TuyaBLEConfigFlow(ConfigFlow, domain=DOMAIN):
                             for service_info in self._discovered_devices.values()
                         }
                     ),
+                },
+            ),
+            errors=errors,
+        )
+
+    async def async_step_manual_mac(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle manual MAC address entry for BLE devices not auto-discovered."""
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            address = user_input[CONF_ADDRESS].strip().upper()
+            # Validate MAC format
+            if len(address.replace(":", "").replace("-", "")) != 12:
+                errors["base"] = "invalid_mac"
+            else:
+                # Normalize to colon-separated format
+                raw = address.replace(":", "").replace("-", "")
+                address = ":".join(raw[i : i + 2] for i in range(0, 12, 2))
+
+                await self.async_set_unique_id(address, raise_on_progress=False)
+                self._abort_if_unique_id_configured()
+
+                credentials = await self._manager.get_device_credentials(
+                    address, self._get_device_info_error, True
+                )
+                self._data[CONF_ADDRESS] = address
+                if credentials is None:
+                    self._get_device_info_error = True
+                    errors["base"] = "device_not_registered"
+                else:
+                    local_name = credentials.device_name or "Tuya BLE Device"
+                    return self.async_create_entry(
+                        title=local_name,
+                        data={CONF_ADDRESS: address},
+                        options=self._data,
+                    )
+
+        return self.async_show_form(
+            step_id="manual_mac",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_ADDRESS): str,
                 },
             ),
             errors=errors,
