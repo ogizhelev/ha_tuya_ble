@@ -263,6 +263,7 @@ class TuyaBLEConfigFlow(ConfigFlow, domain=DOMAIN):
             )
             if data:
                 self._data.update(data)
+                await self._manager.ensure_cache_filled()
                 return await self.async_step_device()
 
         if user_input is None:

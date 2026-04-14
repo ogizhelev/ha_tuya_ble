@@ -326,6 +326,16 @@ class HASSTuyaBLEDeviceManager(AbstaractTuyaBLEDeviceManager):
     def data(self) -> dict[str, Any]:
         return self._data
 
+    async def ensure_cache_filled(self) -> None:
+        """Ensure the cloud cache has device credentials for current login."""
+        global _cache
+        if not self._has_login(self._data):
+            return
+        cache_key = self._get_cache_key(self._data)
+        item = _cache.get(cache_key)
+        if item and len(item.credentials) == 0:
+            await self._fill_cache_item(item)
+
     def get_known_addresses(self) -> set[str]:
         """Return all MAC addresses known from the Tuya cloud cache."""
         global _cache
