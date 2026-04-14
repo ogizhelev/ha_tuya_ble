@@ -124,6 +124,31 @@ class TuyaLightEntityDescription(TuyaBLEEntityDescription, LightEntityDescriptio
 # <category> : { <productid> : [ TuyaLightEntityDescription(); ... ] },
 # ...}
 ProductsMapping: dict[str, dict[str, tuple[TuyaLightEntityDescription, ...]]] = {
+    "dj": {
+        "10qaawhk": (
+            TuyaLightEntityDescription(
+                key=DPCode.SWITCH_LED,
+                name=None,
+                color_mode=DPCode.WORK_MODE,
+                brightness=DPCode.BRIGHT_VALUE_V2,
+                color_temp=DPCode.TEMP_VALUE_V2,
+                function=[
+                    {"code": "switch_led", "dp_id": 1, "type": "Boolean", "values": {}},
+                    {"code": "work_mode", "dp_id": 2, "type": "Enum", "values": {"range": ["white", "colour", "scene", "music"]}},
+                    {"code": "bright_value_v2", "dp_id": 3, "type": "Integer", "values": {"min": 10, "max": 1000, "scale": 0, "step": 1}},
+                    {"code": "temp_value_v2", "dp_id": 4, "type": "Integer", "values": {"min": 0, "max": 1000, "scale": 0, "step": 1}},
+                    {"code": "countdown_1", "dp_id": 7, "type": "Integer", "values": {"unit": "s", "min": 0, "max": 86400, "scale": 0, "step": 1}},
+                ],
+                status_range=[
+                    {"code": "switch_led", "dp_id": 1, "type": "Boolean", "values": {}},
+                    {"code": "work_mode", "dp_id": 2, "type": "Enum", "values": {"range": ["white", "colour", "scene", "music"]}},
+                    {"code": "bright_value_v2", "dp_id": 3, "type": "Integer", "values": {"min": 10, "max": 1000, "scale": 0, "step": 1}},
+                    {"code": "temp_value_v2", "dp_id": 4, "type": "Integer", "values": {"min": 0, "max": 1000, "scale": 0, "step": 1}},
+                    {"code": "countdown_1", "dp_id": 7, "type": "Integer", "values": {"unit": "s", "min": 0, "max": 86400, "scale": 0, "step": 1}},
+                ],
+            ),
+        ),
+    },
     "dd": {
         "nvfrtxlq": (
             TuyaLightEntityDescription(
@@ -508,8 +533,12 @@ def get_mapping_by_device(device: TuyaBLEDevice) -> tuple[TuyaLightEntityDescrip
     category = ProductsMapping.get(device.category)
     if category is not None:
         product_mapping_overrides = category.get(device.product_id)
-        if product_mapping_overrides is not None and category_mapping is not None:
-            return update_mapping(category_mapping, product_mapping_overrides)
+        if product_mapping_overrides is not None:
+            # If all descriptions have non-empty keys, it's a full replacement
+            if all(desc.key != "" for desc in product_mapping_overrides):
+                return product_mapping_overrides
+            if category_mapping is not None:
+                return update_mapping(category_mapping, product_mapping_overrides)
 
     if category_mapping is None:
         _LOGGER.debug("Could not find light with device.category " + device.category)
