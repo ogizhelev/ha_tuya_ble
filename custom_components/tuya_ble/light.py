@@ -969,6 +969,8 @@ async def async_setup_entry(
     entities: list[TuyaBLELight] = []
 
     for desc in descs:
+        # Inject DP definitions from the description before checking availability
+        data.device.update_description(desc)
         # Skip descriptions where the key DPCode doesn't exist on the device
         if desc.key not in data.device.function and desc.key not in data.device.status_range:
             continue
