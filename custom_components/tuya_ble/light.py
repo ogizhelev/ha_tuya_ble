@@ -940,6 +940,9 @@ async def async_setup_entry(
     entities: list[TuyaBLELight] = []
 
     for desc in descs:
+        # Skip descriptions where the key DPCode doesn't exist on the device
+        if desc.key not in data.device.function and desc.key not in data.device.status_range:
+            continue
         entities.append(
             TuyaBLELight(
                 hass,
