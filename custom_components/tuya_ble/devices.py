@@ -604,6 +604,16 @@ devices_database: dict[str, TuyaBLECategoryInfo] = {
             )
         },
     ),
+    "dj": TuyaBLECategoryInfo(
+        products={
+            "10qaawhk": TuyaBLEProductInfo(
+                name="Smart Ceiling Lights",
+            ),
+        },
+        info=TuyaBLEProductInfo(
+            name="Light",
+        ),
+    ),
     "dd": TuyaBLECategoryInfo(
         products={
             "nvfrtxlq": TuyaBLEProductInfo(
