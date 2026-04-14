@@ -325,3 +325,11 @@ class HASSTuyaBLEDeviceManager(AbstaractTuyaBLEDeviceManager):
     @property
     def data(self) -> dict[str, Any]:
         return self._data
+
+    def get_known_addresses(self) -> set[str]:
+        """Return all MAC addresses known from the Tuya cloud cache."""
+        global _cache
+        addresses: set[str] = set()
+        for cache_item in _cache.values():
+            addresses.update(cache_item.credentials.keys())
+        return addresses

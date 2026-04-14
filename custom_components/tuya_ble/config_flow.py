@@ -27,7 +27,7 @@ from homeassistant.const import (
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowHandler, FlowResult
 
-from .tuya_ble import SERVICE_UUID, TuyaBLEDeviceCredentials
+from .tuya_ble import SERVICE_UUID, SERVICE_UUID_TEMP, TuyaBLEDeviceCredentials
 
 from .const import (
     TUYA_COUNTRIES,
@@ -312,13 +312,22 @@ class TuyaBLEConfigFlow(ConfigFlow, domain=DOMAIN):
             self._discovered_devices[discovery.address] = discovery
         else:
             current_addresses = self._async_current_ids()
+            known_addresses = self._manager.get_known_addresses()
             for discovery in async_discovered_service_info(self.hass):
                 if (
                     discovery.address in current_addresses
                     or discovery.address in self._discovered_devices
-                    or discovery.service_data is None
-                    or not SERVICE_UUID in discovery.service_data.keys()
                 ):
+                    continue
+                has_tuya_service = (
+                    discovery.service_data is not None
+                    and (
+                        SERVICE_UUID in discovery.service_data.keys()
+                        or SERVICE_UUID_TEMP in discovery.service_data.keys()
+                    )
+                )
+                is_known_device = discovery.address.upper() in known_addresses
+                if not has_tuya_service and not is_known_device:
                     continue
                 self._discovered_devices[discovery.address] = discovery
 
